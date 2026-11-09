@@ -1,0 +1,1894 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>코인 물타기 역산 계산기 V2</title>
+<meta name="description" content="현재 보유 중인 코인의 평단가를 원하는 목표 평단까지 낮추려면 얼마를 추가 매수해야 하는지 계산하는 코인 물타기 역산 계산기입니다.">
+
+<style>
+:root{
+  --bg:#f4f6f9;
+  --card:#fff;
+  --text:#111827;
+  --muted:#667085;
+  --line:#e5e7eb;
+  --soft:#f8fafc;
+  --primary:#111827;
+  --primary2:#2563eb;
+  --accent:#fff7cc;
+  --danger-bg:#fff1f2;
+  --danger:#b42318;
+  --success:#067647;
+  --success-bg:#ecfdf3;
+}
+
+*{
+  box-sizing:border-box;
+}
+
+html{
+  scroll-behavior:smooth;
+}
+
+body{
+  margin:0;
+  padding:18px;
+  background:var(--bg);
+  color:var(--text);
+  font-family:Arial,"Noto Sans KR","Apple SD Gothic Neo",sans-serif;
+}
+
+.container{
+  width:100%;
+  max-width:720px;
+  margin:0 auto;
+}
+
+.header{
+  text-align:center;
+  padding:10px 4px 6px;
+}
+
+.badge{
+  display:inline-block;
+  padding:6px 10px;
+  border-radius:999px;
+  background:#eaf2ff;
+  color:#1d4ed8;
+  font-size:12px;
+  font-weight:800;
+  margin-bottom:8px;
+}
+
+.header h1{
+  margin:0 0 8px;
+  font-size:29px;
+  line-height:1.35;
+  letter-spacing:-.7px;
+}
+
+.header p{
+  margin:0;
+  color:var(--muted);
+  line-height:1.6;
+  font-size:15px;
+}
+
+.top-actions{
+  margin:14px 0 0;
+}
+
+.card{
+  background:var(--card);
+  border:1px solid var(--line);
+  border-radius:20px;
+  padding:20px;
+  margin:16px 0;
+  box-shadow:0 4px 16px rgba(17,24,39,.05);
+}
+
+.example-card{
+  background:linear-gradient(180deg,#fbfcff,#f7f9fc);
+}
+
+.example-title{
+  font-size:17px;
+  font-weight:900;
+  margin-bottom:8px;
+}
+
+.example-line{
+  line-height:1.7;
+  color:var(--muted);
+  font-size:14px;
+}
+
+.example-line strong{
+  color:var(--text);
+}
+
+.form-title{
+  font-size:20px;
+  font-weight:900;
+  margin-bottom:16px;
+}
+
+.field{
+  margin-bottom:18px;
+}
+
+.field-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+  margin-bottom:6px;
+}
+
+label{
+  display:block;
+  font-size:16px;
+  font-weight:900;
+  letter-spacing:-.2px;
+}
+
+.step{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  width:25px;
+  height:25px;
+  border-radius:50%;
+  background:#eef2ff;
+  color:#3730a3;
+  font-size:12px;
+  font-weight:900;
+  flex:0 0 auto;
+}
+
+.help{
+  margin:0 0 8px;
+  color:var(--muted);
+  font-size:13px;
+  line-height:1.5;
+}
+
+input{
+  width:100%;
+  min-height:54px;
+  padding:14px 15px;
+  border:1px solid #d0d5dd;
+  border-radius:13px;
+  background:#fff;
+  color:var(--text);
+  font-size:18px;
+  font-weight:700;
+  outline:none;
+  transition:.15s;
+}
+
+input:focus{
+  border-color:#3b82f6;
+  box-shadow:0 0 0 4px rgba(59,130,246,.10);
+}
+
+.total-box{
+  border:1px solid #dbe4f0;
+  background:#f7faff;
+  border-radius:16px;
+  padding:15px 17px;
+  margin:0 0 20px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+}
+
+.total-label{
+  color:var(--muted);
+  font-size:13px;
+  line-height:1.4;
+}
+
+.total-value{
+  font-size:24px;
+  font-weight:950;
+  text-align:right;
+  word-break:break-word;
+}
+
+.quick-wrap{
+  margin-top:-4px;
+  margin-bottom:18px;
+}
+
+.quick-label{
+  font-size:12px;
+  color:var(--muted);
+  margin-bottom:7px;
+}
+
+.quick-grid{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:8px;
+}
+
+button{
+  min-height:48px;
+  border:0;
+  border-radius:12px;
+  font-size:15px;
+  font-weight:850;
+  cursor:pointer;
+  touch-action:manipulation;
+}
+
+.quick-btn{
+  background:#f8fafc;
+  color:#374151;
+  border:1px solid var(--line);
+  font-size:14px;
+}
+
+.quick-btn:hover{
+  background:#eef2ff;
+  border-color:#c7d2fe;
+}
+
+.primary-btn{
+  width:100%;
+  background:linear-gradient(135deg,#111827,#1f3b73);
+  color:#fff;
+  padding:15px;
+  font-size:17px;
+  box-shadow:0 5px 12px rgba(17,24,39,.16);
+}
+
+.reset-btn{
+  width:100%;
+  background:#fff;
+  color:#475467;
+  border:1px solid #d0d5dd;
+  padding:12px;
+}
+
+.warning{
+  display:none;
+  margin-top:14px;
+  padding:14px;
+  border-radius:12px;
+  background:var(--danger-bg);
+  color:var(--danger);
+  line-height:1.6;
+  font-size:14px;
+  font-weight:700;
+}
+
+.result-card{
+  display:none;
+}
+
+.section-title{
+  font-size:20px;
+  font-weight:950;
+  margin-bottom:12px;
+}
+
+.result-hero{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:10px;
+  margin-bottom:16px;
+}
+
+.hero-box{
+  border:1px solid var(--line);
+  border-radius:15px;
+  padding:13px;
+  background:#fbfcfe;
+}
+
+.hero-box.primary{
+  background:#eef4ff;
+  border-color:#cfe0ff;
+}
+
+.hero-box.success{
+  background:var(--success-bg);
+  border-color:#bbf7d0;
+}
+
+.hero-label{
+  font-size:12px;
+  color:var(--muted);
+  line-height:1.4;
+}
+
+.hero-value{
+  margin-top:5px;
+  font-size:18px;
+  font-weight:950;
+  line-height:1.3;
+  word-break:break-word;
+}
+
+.result-list{
+  border-top:1px solid var(--line);
+}
+
+.quantity-note{
+  margin:-4px 0 14px;
+  padding:11px 13px;
+  border-radius:12px;
+  background:#f8fafc;
+  border:1px solid var(--line);
+  color:#475467;
+  font-size:13px;
+  line-height:1.55;
+}
+
+.result-row{
+  display:flex;
+  justify-content:space-between;
+  gap:18px;
+  padding:12px 0;
+  border-bottom:1px solid var(--line);
+  align-items:flex-start;
+}
+
+.result-row .name{
+  color:var(--muted);
+  font-size:14px;
+}
+
+.result-row .value{
+  text-align:right;
+  font-weight:850;
+  font-size:14px;
+  word-break:break-word;
+}
+
+.history-header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:10px;
+}
+
+.history-sub{
+  color:var(--muted);
+  font-size:12px;
+  margin-top:4px;
+  line-height:1.5;
+}
+
+.clear-history{
+  min-height:38px;
+  padding:7px 11px;
+  background:#fff;
+  color:#667085;
+  border:1px solid var(--line);
+  font-size:12px;
+  flex:0 0 auto;
+}
+
+.history-empty{
+  color:var(--muted);
+  font-size:14px;
+  padding:10px 0 2px;
+}
+
+.history-list{
+  display:grid;
+  gap:9px;
+}
+
+.history-item{
+  width:100%;
+  min-height:0;
+  text-align:left;
+  padding:13px 14px;
+  background:#fbfcfe;
+  color:var(--text);
+  border:1px solid var(--line);
+  border-radius:13px;
+  font-weight:400;
+}
+
+.history-item:hover{
+  background:#f7f9fc;
+}
+
+.history-top{
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+  align-items:flex-start;
+}
+
+.history-item strong{
+  font-size:14px;
+}
+
+.history-money{
+  font-size:14px;
+  font-weight:900;
+  color:#1d4ed8;
+  white-space:nowrap;
+}
+
+.history-meta{
+  margin-top:5px;
+  color:var(--muted);
+  font-size:12px;
+  line-height:1.5;
+}
+
+.notice{
+  color:var(--muted);
+  font-size:12.5px;
+  line-height:1.7;
+  background:#fafafa;
+}
+
+.footer-space{
+  height:16px;
+}
+
+@media(max-width:560px){
+  body{
+    padding:12px;
+  }
+
+  .header h1{
+    font-size:24px;
+  }
+
+  .card{
+    padding:17px;
+    border-radius:17px;
+  }
+
+  .result-hero{
+    grid-template-columns:1fr;
+  }
+
+  .hero-box{
+    padding:12px;
+  }
+
+  .total-box{
+    align-items:flex-start;
+    flex-direction:column;
+  }
+
+  .total-value{
+    text-align:left;
+    font-size:23px;
+  }
+
+  .quick-grid{
+    gap:6px;
+  }
+
+  .quick-btn{
+    font-size:13px;
+  }
+
+  .result-row{
+    gap:10px;
+  }
+
+  .history-top{
+    display:block;
+  }
+
+  .history-money{
+    margin-top:4px;
+    white-space:normal;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<header class="header">
+
+<div class="badge">
+VERSION 2 · 목표 평단 역산
+</div>
+
+<h1>
+🎯 코인 물타기 계산기
+</h1>
+
+<p>
+원하는 평단까지 낮추려면<br>
+<strong>현재가격에서 얼마를 더 사야 하는지</strong>
+바로 계산합니다.
+</p>
+
+</header>
+
+<div class="top-actions">
+
+<button
+class="reset-btn"
+id="resetTop"
+type="button"
+>
+↻ 입력값 전체 초기화
+</button>
+
+</div>
+
+<section class="card example-card">
+
+<div class="example-title">
+📌 예시로 보면 이렇게 계산돼요
+</div>
+
+<div class="example-line">
+
+평단
+<strong>100원</strong>
+· 보유
+<strong>10,000개</strong>
+· 현재가
+<strong>60원</strong>
+
+<br>
+
+목표평단
+<strong>80원</strong>
+→
+<strong>
+10,000개 추가매수 / 600,000원 필요
+</strong>
+
+</div>
+
+</section>
+
+<section class="card">
+
+<div class="form-title">
+내 보유정보 입력
+</div>
+
+<div class="field">
+
+<div class="field-head">
+
+<label for="avgPrice">
+매수 평단가
+</label>
+
+<span class="step">
+1
+</span>
+
+</div>
+
+<p class="help">
+현재 보유 중인 코인의 평균 매수단가
+</p>
+
+<input
+type="text"
+inputmode="decimal"
+id="avgPrice"
+placeholder="예: 100,000"
+autocomplete="off"
+>
+
+</div>
+
+<div class="field">
+
+<div class="field-head">
+
+<label for="quantity">
+보유 수량
+</label>
+
+<span class="step">
+2
+</span>
+
+</div>
+
+<p class="help">
+현재 보유하고 있는 총 수량
+</p>
+
+<input
+type="text"
+inputmode="decimal"
+id="quantity"
+placeholder="예: 10,000"
+autocomplete="off"
+>
+
+</div>
+
+<div
+class="total-box"
+aria-live="polite"
+>
+
+<div class="total-label">
+
+💰 현재까지 투입한 원금
+
+<br>
+
+<span>
+평단가 × 보유수량
+</span>
+
+</div>
+
+<div
+class="total-value"
+id="purchaseTotal"
+>
+0원
+</div>
+
+</div>
+
+<div class="field">
+
+<div class="field-head">
+
+<label for="currentPrice">
+현재가격
+</label>
+
+<span class="step">
+3
+</span>
+
+</div>
+
+<p class="help">
+현재 거래되고 있는 코인의 가격
+</p>
+
+<input
+type="text"
+inputmode="decimal"
+id="currentPrice"
+placeholder="예: 60,000"
+autocomplete="off"
+>
+
+</div>
+
+<div class="field">
+
+<div class="field-head">
+
+<label for="targetPrice">
+목표 평단가
+</label>
+
+<span class="step">
+4
+</span>
+
+</div>
+
+<p class="help">
+추가매수 후 만들고 싶은 최종 평단가 · 현재가격보다 높고 기존 평단가보다 낮아야 함
+</p>
+
+<input
+type="text"
+inputmode="decimal"
+id="targetPrice"
+placeholder="예: 80,000"
+autocomplete="off"
+>
+
+</div>
+
+<div class="quick-wrap">
+
+<div class="quick-label">
+기존 평단 기준 빠른 목표 설정
+</div>
+
+<div class="quick-grid">
+
+<button
+class="quick-btn"
+type="button"
+data-cut="5"
+>
+-5%
+</button>
+
+<button
+class="quick-btn"
+type="button"
+data-cut="10"
+>
+-10%
+</button>
+
+<button
+class="quick-btn"
+type="button"
+data-cut="20"
+>
+-20%
+</button>
+
+<button
+class="quick-btn"
+type="button"
+data-cut="30"
+>
+-30%
+</button>
+
+</div>
+
+</div>
+
+<button
+class="primary-btn"
+id="calculateBtn"
+type="button"
+>
+필요한 추가매수 금액 계산하기
+</button>
+
+<div
+class="warning"
+id="warning"
+aria-live="polite"
+>
+</div>
+
+</section>
+
+<section
+class="card result-card"
+id="result"
+>
+
+<div class="section-title">
+📊 계산 결과
+</div>
+
+<div class="result-hero">
+
+<div class="hero-box primary">
+
+<div class="hero-label">
+추가로 필요한 투자금
+</div>
+
+<div
+class="hero-value"
+id="additionalMoney"
+>
+0원
+</div>
+
+</div>
+
+<div class="hero-box">
+
+<div class="hero-label">
+추가매수 후 최종 평단
+</div>
+
+<div
+class="hero-value"
+id="finalAverage"
+>
+0원
+</div>
+
+</div>
+
+<div class="hero-box success">
+
+<div class="hero-label">
+현재가 → 본전 필요 상승률
+</div>
+
+<div
+class="hero-value"
+id="recoveryRate"
+>
+0%
+</div>
+
+</div>
+
+</div>
+
+<div class="quantity-note">
+
+💡
+<strong>
+추가매수 수량은 목표 평단까지 실제로 필요한 최소 매수 수량
+</strong>
+입니다.
+
+소수점 수량은 부족하지 않도록
+1개 단위로 올림하여 계산합니다.
+
+</div>
+
+<div class="result-list">
+
+<div class="result-row">
+
+<span class="name">
+기존 투자금
+</span>
+
+<span
+class="value"
+id="originalInvestment"
+>
+0원
+</span>
+
+</div>
+
+<div class="result-row">
+
+<span class="name">
+현재 평가금액
+</span>
+
+<span
+class="value"
+id="currentValue"
+>
+0원
+</span>
+
+</div>
+
+<div class="result-row">
+
+<span class="name">
+현재 손익률
+</span>
+
+<span
+class="value"
+id="currentLoss"
+>
+0%
+</span>
+
+</div>
+
+<div class="result-row">
+
+<span class="name">
+추가로 매수해야 하는 수량
+</span>
+
+<span
+class="value"
+id="additionalQuantity"
+>
+0개
+</span>
+
+</div>
+
+<div class="result-row">
+
+<span class="name">
+추가매수 후 총 수량
+</span>
+
+<span
+class="value"
+id="finalQuantity"
+>
+0개
+</span>
+
+</div>
+
+<div class="result-row">
+
+<span class="name">
+추가매수 후 총 투자금
+</span>
+
+<span
+class="value"
+id="finalInvestment"
+>
+0원
+</span>
+
+</div>
+
+</div>
+
+</section>
+
+<section class="card">
+
+<div class="history-header">
+
+<div>
+
+<div
+class="section-title"
+style="margin-bottom:0;"
+>
+🕘 최근 계산 기록
+</div>
+
+<div class="history-sub">
+최근 10건 저장 · 항목을 누르면 입력값을 다시 불러옵니다.
+</div>
+
+</div>
+
+<button
+class="clear-history"
+id="clearHistory"
+type="button"
+>
+기록 삭제
+</button>
+
+</div>
+
+<div
+class="history-empty"
+id="historyEmpty"
+>
+아직 계산한 기록이 없습니다.
+</div>
+
+<div
+class="history-list"
+id="historyList"
+>
+</div>
+
+</section>
+
+<button
+class="reset-btn"
+id="resetBottom"
+type="button"
+>
+↻ 입력값 전체 초기화
+</button>
+
+<section class="card notice">
+
+⚠️ 본 계산기는 단순 계산을 위한 참고용 도구입니다.
+
+거래소 수수료, 슬리피지 및 실제 체결가격은 반영하지 않습니다.
+
+무리한 물타기는 투자금과 손실 규모를 동시에 증가시킬 수 있으므로
+투자 판단은 본인의 책임하에 신중하게 결정하시기 바랍니다.
+
+</section>
+
+<div class="footer-space"></div>
+
+</div>
+
+<script>
+
+(() => {
+
+const HISTORY_KEY =
+"coin_average_down_history_v1";
+
+const MAX_HISTORY = 10;
+
+const avgPrice =
+document.getElementById("avgPrice");
+
+const quantity =
+document.getElementById("quantity");
+
+const currentPrice =
+document.getElementById("currentPrice");
+
+const targetPrice =
+document.getElementById("targetPrice");
+
+const purchaseTotal =
+document.getElementById("purchaseTotal");
+
+const warning =
+document.getElementById("warning");
+
+const result =
+document.getElementById("result");
+
+const historyList =
+document.getElementById("historyList");
+
+const historyEmpty =
+document.getElementById("historyEmpty");
+
+
+function parseNumber(value){
+
+  const n =
+  parseFloat(
+    String(value)
+    .replace(/,/g,"")
+  );
+
+  return Number.isFinite(n)
+    ? n
+    : 0;
+
+}
+
+
+function formatNumber(value){
+
+  if(
+    !Number.isFinite(value)
+  ){
+    return "0";
+  }
+
+  return Number(value)
+  .toLocaleString(
+    "ko-KR",
+    {
+      maximumFractionDigits:8
+    }
+  );
+
+}
+
+
+function formatInput(input){
+
+  let raw =
+  input.value
+  .replace(/,/g,"")
+  .replace(/[^0-9.]/g,"");
+
+  const dotIndex =
+  raw.indexOf(".");
+
+  if(
+    dotIndex !== -1
+  ){
+
+    raw =
+    raw.slice(
+      0,
+      dotIndex + 1
+    )
+    +
+    raw.slice(
+      dotIndex + 1
+    )
+    .replace(/\./g,"");
+
+  }
+
+  if(
+    raw === ""
+  ){
+
+    input.value =
+    "";
+
+    return;
+
+  }
+
+  const parts =
+  raw.split(".");
+
+  const integerPart =
+  parts[0] === ""
+    ? "0"
+    : parts[0];
+
+  const formattedInteger =
+  Number(integerPart)
+  .toLocaleString(
+    "ko-KR"
+  );
+
+  input.value =
+  parts.length > 1
+    ? formattedInteger
+      + "."
+      + parts[1]
+    : formattedInteger;
+
+}
+
+
+function updatePurchaseTotal(){
+
+  const avg =
+  parseNumber(
+    avgPrice.value
+  );
+
+  const qty =
+  parseNumber(
+    quantity.value
+  );
+
+  const total =
+  avg > 0 &&
+  qty > 0
+    ? avg * qty
+    : 0;
+
+  purchaseTotal.textContent =
+  Math.round(total)
+  .toLocaleString(
+    "ko-KR"
+  )
+  +
+  "원";
+
+}
+
+
+function showWarning(message){
+
+  warning.innerHTML =
+  message;
+
+  warning.style.display =
+  "block";
+
+}
+
+
+function hideWarning(){
+
+  warning.style.display =
+  "none";
+
+  warning.innerHTML =
+  "";
+
+}
+
+
+function resetAll(){
+
+  avgPrice.value =
+  "";
+
+  quantity.value =
+  "";
+
+  currentPrice.value =
+  "";
+
+  targetPrice.value =
+  "";
+
+  purchaseTotal.textContent =
+  "0원";
+
+  result.style.display =
+  "none";
+
+  hideWarning();
+
+  window.scrollTo({
+    top:0,
+    behavior:"smooth"
+  });
+
+}
+
+
+function loadHistory(){
+
+  try{
+
+    const saved =
+    localStorage
+    .getItem(
+      HISTORY_KEY
+    );
+
+    const parsed =
+    saved
+      ? JSON.parse(saved)
+      : [];
+
+    return Array.isArray(parsed)
+      ? parsed
+      : [];
+
+  }
+  catch(e){
+
+    return [];
+
+  }
+
+}
+
+
+function saveHistory(history){
+
+  try{
+
+    localStorage
+    .setItem(
+      HISTORY_KEY,
+      JSON.stringify(history)
+    );
+
+  }
+  catch(e){}
+
+}
+
+
+function renderHistory(){
+
+  const history =
+  loadHistory();
+
+  historyList.innerHTML =
+  "";
+
+  historyEmpty.style.display =
+  history.length
+    ? "none"
+    : "block";
+
+
+  history.forEach(
+    (item,index) => {
+
+      const button =
+      document.createElement(
+        "button"
+      );
+
+      button.type =
+      "button";
+
+      button.className =
+      "history-item";
+
+
+      const avg =
+      Math.round(
+        Number(item.avg) || 0
+      );
+
+      const target =
+      Math.round(
+        Number(item.target) || 0
+      );
+
+      const current =
+      Math.round(
+        Number(item.current) || 0
+      );
+
+      const qty =
+      Math.round(
+        Number(item.qty) || 0
+      );
+
+      const addMoney =
+      Math.round(
+        Number(item.addMoney) || 0
+      );
+
+
+      button.innerHTML =
+      `
+      <div class="history-top">
+
+        <strong>
+        ${index+1}.
+        ${avg.toLocaleString("ko-KR")}원
+        →
+        ${target.toLocaleString("ko-KR")}원
+        </strong>
+
+        <span class="history-money">
+        +
+        ${addMoney.toLocaleString("ko-KR")}원
+        </span>
+
+      </div>
+
+      <div class="history-meta">
+
+      현재가
+      ${current.toLocaleString("ko-KR")}원
+
+      ·
+
+      보유
+      ${qty.toLocaleString("ko-KR")}개
+
+      </div>
+      `;
+
+
+      button.addEventListener(
+        "click",
+        () => {
+
+          avgPrice.value =
+          avg.toLocaleString(
+            "ko-KR"
+          );
+
+          quantity.value =
+          qty.toLocaleString(
+            "ko-KR"
+          );
+
+          currentPrice.value =
+          current.toLocaleString(
+            "ko-KR"
+          );
+
+          targetPrice.value =
+          target.toLocaleString(
+            "ko-KR"
+          );
+
+          updatePurchaseTotal();
+
+          result.style.display =
+          "none";
+
+          hideWarning();
+
+          window.scrollTo({
+            top:0,
+            behavior:"smooth"
+          });
+
+        }
+      );
+
+      historyList.appendChild(
+        button
+      );
+
+    }
+  );
+
+}
+
+
+function addHistory(item){
+
+  let history =
+  loadHistory();
+
+  history.unshift({
+    ...item,
+    savedAt:Date.now()
+  });
+
+  history =
+  history.slice(
+    0,
+    MAX_HISTORY
+  );
+
+  saveHistory(
+    history
+  );
+
+  renderHistory();
+
+}
+
+
+[
+  avgPrice,
+  quantity,
+  currentPrice,
+  targetPrice
+]
+.forEach(
+  input => {
+
+    input.addEventListener(
+      "input",
+      () => {
+
+        formatInput(
+          input
+        );
+
+        if(
+          input === avgPrice ||
+          input === quantity
+        ){
+
+          updatePurchaseTotal();
+
+        }
+
+      }
+    );
+
+  }
+);
+
+
+document
+.querySelectorAll(
+  "[data-cut]"
+)
+.forEach(
+  button => {
+
+    button.addEventListener(
+      "click",
+      () => {
+
+        const avg =
+        parseNumber(
+          avgPrice.value
+        );
+
+        if(
+          avg <= 0
+        ){
+
+          showWarning(
+            "⚠️ 매수 평단가를 먼저 입력해주세요."
+          );
+
+          return;
+
+        }
+
+        const cut =
+        Number(
+          button.dataset.cut
+        );
+
+        targetPrice.value =
+        formatNumber(
+          avg
+          *
+          (
+            1
+            -
+            cut / 100
+          )
+        );
+
+        hideWarning();
+
+      }
+    );
+
+  }
+);
+
+
+document
+.getElementById(
+  "calculateBtn"
+)
+.addEventListener(
+  "click",
+  () => {
+
+    const avg =
+    parseNumber(
+      avgPrice.value
+    );
+
+    const qty =
+    parseNumber(
+      quantity.value
+    );
+
+    const current =
+    parseNumber(
+      currentPrice.value
+    );
+
+    const target =
+    parseNumber(
+      targetPrice.value
+    );
+
+
+    result.style.display =
+    "none";
+
+    hideWarning();
+
+
+    if(
+      [
+        avg,
+        qty,
+        current,
+        target
+      ]
+      .some(
+        v => v <= 0
+      )
+    ){
+
+      showWarning(
+        "⚠️ 모든 항목에 0보다 큰 값을 입력해주세요."
+      );
+
+      return;
+
+    }
+
+
+    if(
+      current >= avg
+    ){
+
+      showWarning(
+        "⚠️ 현재가격이 기존 평단가보다 높거나 같습니다.<br>현재 조건에서는 물타기로 평단을 낮출 필요가 없습니다."
+      );
+
+      return;
+
+    }
+
+
+    if(
+      target >= avg
+    ){
+
+      showWarning(
+        "⚠️ 목표 평단가는 기존 평단가보다 낮게 설정해주세요."
+      );
+
+      return;
+
+    }
+
+
+    if(
+      target <= current
+    ){
+
+      showWarning(
+        "⚠️ 목표 평단가는 현재가격보다 높아야 합니다.<br>현재가격 이하의 목표 평단은 현재 가격으로는 만들 수 없습니다."
+      );
+
+      return;
+
+    }
+
+
+    const originalInvestment =
+    avg
+    *
+    qty;
+
+
+    const currentValue =
+    current
+    *
+    qty;
+
+
+    const currentLoss =
+    (
+      (
+        current
+        -
+        avg
+      )
+      /
+      avg
+    )
+    *
+    100;
+
+
+    const rawAdditionalQuantity =
+    qty
+    *
+    (
+      avg
+      -
+      target
+    )
+    /
+    (
+      target
+      -
+      current
+    );
+
+
+    const additionalQuantity =
+    Math.ceil(
+      rawAdditionalQuantity
+    );
+
+
+    const additionalMoney =
+    Math.round(
+      additionalQuantity
+      *
+      current
+    );
+
+
+    const finalQuantity =
+    Math.ceil(
+      qty
+      +
+      additionalQuantity
+    );
+
+
+    const finalInvestment =
+    Math.round(
+      originalInvestment
+      +
+      additionalMoney
+    );
+
+
+    const finalAverage =
+    Math.round(
+      finalInvestment
+      /
+      finalQuantity
+    );
+
+
+    const recoveryRate =
+    (
+      (
+        finalAverage
+        /
+        current
+      )
+      -
+      1
+    )
+    *
+    100;
+
+
+    document
+    .getElementById(
+      "originalInvestment"
+    )
+    .textContent =
+    Math.round(
+      originalInvestment
+    )
+    .toLocaleString(
+      "ko-KR"
+    )
+    +
+    "원";
+
+
+    document
+    .getElementById(
+      "currentValue"
+    )
+    .textContent =
+    Math.round(
+      currentValue
+    )
+    .toLocaleString(
+      "ko-KR"
+    )
+    +
+    "원";
+
+
+    document
+    .getElementById(
+      "currentLoss"
+    )
+    .textContent =
+    currentLoss
+    .toFixed(2)
+    +
+    "%";
+
+
+    document
+    .getElementById(
+      "additionalQuantity"
+    )
+    .textContent =
+    additionalQuantity
+    .toLocaleString(
+      "ko-KR"
+    )
+    +
+    "개";
+
+
+    document
+    .getElementById(
+      "additionalMoney"
+    )
+    .textContent =
+    additionalMoney
+    .toLocaleString(
+      "ko-KR"
+    )
+    +
+    "원";
+
+
+    document
+    .getElementById(
+      "finalQuantity"
+    )
+    .textContent =
+    finalQuantity
+    .toLocaleString(
+      "ko-KR"
+    )
+    +
+    "개";
+
+
+    document
+    .getElementById(
+      "finalInvestment"
+    )
+    .textContent =
+    finalInvestment
+    .toLocaleString(
+      "ko-KR"
+    )
+    +
+    "원";
+
+
+    document
+    .getElementById(
+      "finalAverage"
+    )
+    .textContent =
+    finalAverage
+    .toLocaleString(
+      "ko-KR"
+    )
+    +
+    "원";
+
+
+    document
+    .getElementById(
+      "recoveryRate"
+    )
+    .textContent =
+    recoveryRate
+    .toFixed(2)
+    +
+    "%";
+
+
+    result.style.display =
+    "block";
+
+
+    addHistory({
+
+      avg,
+
+      qty,
+
+      current,
+
+      target,
+
+      addMoney:
+      additionalMoney
+
+    });
+
+
+    result.scrollIntoView({
+
+      behavior:
+      "smooth",
+
+      block:
+      "start"
+
+    });
+
+  }
+);
+
+
+document
+.getElementById(
+  "resetTop"
+)
+.addEventListener(
+  "click",
+  resetAll
+);
+
+
+document
+.getElementById(
+  "resetBottom"
+)
+.addEventListener(
+  "click",
+  resetAll
+);
+
+
+document
+.getElementById(
+  "clearHistory"
+)
+.addEventListener(
+  "click",
+  () => {
+
+    try{
+
+      localStorage
+      .removeItem(
+        HISTORY_KEY
+      );
+
+    }
+    catch(e){}
+
+    renderHistory();
+
+  }
+);
+
+
+renderHistory();
+
+})();
+</script>
+
+</body>
+  </html>
